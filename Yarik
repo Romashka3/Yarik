@@ -1,0 +1,25 @@
+import telegram
+from telegram.ext import CommandHandler, MessageHandler, Filters, Updater
+import requests
+
+# create the telegram bot
+updater = Updater(token='5993333436:AAHHV0_8ydDcqeWPx0ddebMseEVUtBVUfKs', use_context=True)
+dispatcher = updater.dispatcher
+
+def generate_text(update, context):
+    # get the message text
+    text = update.message.text
+    
+    # generate text using the Chat with GPT API
+    headers = {'Authorization': 'Bearer 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'}
+    data = {'text': text}
+    response = requests.post('https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium', headers=headers, json=data)
+    generated_text = response.json()[0]['generated_text']
+    
+    # send the generated text back to the user
+    context.bot.send_message(chat_id=update.effective_chat.id, text=generated_text)
+
+generate_text_handler = MessageHandler(Filters.text, generate_text)
+dispatcher.add_handler(generate_text_handler)
+
+updater.start_polling()
